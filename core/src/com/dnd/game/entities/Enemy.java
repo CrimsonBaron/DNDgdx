@@ -1,15 +1,45 @@
 package com.dnd.game.entities;
 
-import com.dnd.game.utils.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.*;
+import com.dnd.game.Globals;
+import com.dnd.game.interfaces.ICombatInter;
+import com.dnd.game.utils.MathUtils;
 import com.dnd.game.utils.SceneBuilder;
 
-public class Enemy extends KillAbleEntity{
+import static com.dnd.game.Globals.PPM;
+
+public class Enemy extends MapEntity implements ICombatInter {
     private World world;
-    private float x,y;
+    private float x,y,hp;
     private Body body;
+    private EmapEnemyType type;
+    private boolean isDead;
+
+    @Override
+    public void lightAttack() {
+
+    }
+
+    @Override
+    public void chargedAttack() {
+
+    }
+
+    @Override
+    public void gunShot() {
+
+    }
+
+    @Override
+    public void damage(float dmg) {
+        if (!isDead) {this.hp -=dmg;}
+        if (this.hp < 0){
+            isDead = true;
+        }
+        System.out.println("hp: "+this.hp);
+    }
+
 
     public enum EmapEnemyType{
         NORMAL(64),
@@ -27,21 +57,63 @@ public class Enemy extends KillAbleEntity{
         }
     }
 
-    public Enemy(World world, float x, float y ,boolean isBoss) {
+    public Enemy(World world, float x, float y ,boolean isMiniBoss,boolean isBoss) {
         this.world = world;
         this.x = x;
         this.y = y;
-        EmapEnemyType mapEnemy = getRandomEnemyType(isBoss);
+        this.hp=100f;
+        this.isDead = false;
+        EmapEnemyType mapEnemy = getRandomEnemyType(isMiniBoss,isBoss);
         body = SceneBuilder.createBox(world,x,y, mapEnemy.getSize(), mapEnemy.getSize(), false,true);
+        this.type=mapEnemy;
     }
 
-    public EmapEnemyType getRandomEnemyType(boolean isBoss){
-        if (MathUtils.randomChance(80) && !isBoss){
+    private Body createEnemy(World world, float x, float y, int width, int height, boolean isStatic, boolean fixedRotation){
+        Body pBody;
+        BodyDef def = new BodyDef();
+
+        if(isStatic)
+            def.type = BodyDef.BodyType.StaticBody;
+        else
+            def.type = BodyDef.BodyType.DynamicBody;
+
+        def.position.set(x /PPM, y /PPM);
+        def.fixedRotation = fixedRotation;
+        pBody = world.createBody(def);
+        pBody.setUserData("wall");
+
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(width/2/PPM  , height/2/PPM  );
+
+        FixtureDef fd = new FixtureDef();
+        fd.shape = shape;
+        fd.filter.categoryBits = Globals.BIT_ENEMY;
+        fd.filter.maskBits = Globals.BIT_ENEMY | Globals.BIT_PLAYER | Globals.BIT_WALL;
+        fd.filter.groupIndex = 0;
+        fd.density = 1.0f;
+        pBody.createFixture(fd).setUserData(this);
+        shape.dispose();
+
+        pBody.setLinearDamping(20);
+        return pBody;
+    }
+
+
+    public EmapEnemyType getRandomEnemyType(boolean isMiniBoss,boolean isBoss){
+        if (!isMiniBoss && !isBoss){
             return EmapEnemyType.NORMAL;
         }
-        if (MathUtils.randomChance(20) && !isBoss){
+        if (isMiniBoss && !isBoss){
             return EmapEnemyType.MINI_BOSS;
         }
         return EmapEnemyType.BOSS;
+    }
+
+    public EmapEnemyType getType() {
+        return type;
+    }
+
+    public Vector2 getPosition(){
+        return body.getPosition();
     }
 }

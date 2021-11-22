@@ -43,8 +43,8 @@ public class DndGame extends ApplicationAdapter {
 		stateManager.update(Gdx.graphics.getDeltaTime());
 		stateManager.render();
 
-		//if (test){stateManager.setState(GameStateManager.State.DUNGEON); test=!test;}
-		if (test){stateManager.setState(GameStateManager.State.COMBAT); test=!test;}
+		if (test){stateManager.setState(GameStateManager.State.DUNGEON); test=!test;}
+		//if (test){stateManager.setState(GameStateManager.State.COMBAT); test=!test;}
 
 
 	}

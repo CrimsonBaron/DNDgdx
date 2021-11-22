@@ -37,9 +37,8 @@ public class DungeonState extends GameState {
         target = new Vector2(0, 0);
         rooms = new Room[32][32];
         pos = new Vector2(MathUtils.random(28) + 2, MathUtils.random(28) + 2);
+        player = new Player(world, camera);
         CreateRoom(0);
-        player = new Player(world);
-
 
     }
 
@@ -47,6 +46,7 @@ public class DungeonState extends GameState {
         rooms[(int) pos.x][(int) pos.y] = new Room(world, (int) pos.x, (int) pos.y, target);
         roomCount++;
         System.out.println("Room count"+roomCount);
+        player.setCurrentPlayersRoom(rooms[(int) pos.x][(int) pos.y]);
         generateRoomAdditions(i);
     }
 
@@ -225,6 +225,7 @@ public class DungeonState extends GameState {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         b2dr.render(world, camera.combined.cpy().scl(PPM));
+        player.render(batch);
     }
 
     @Override

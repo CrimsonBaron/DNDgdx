@@ -11,6 +11,8 @@ import com.dnd.game.utils.SceneBuilder;
 
 import java.util.ArrayList;
 
+import static com.dnd.game.utils.MathUtils.randomChance;
+
 public class Room {
     private World world;
 
@@ -74,12 +76,15 @@ public class Room {
     }
 
     public void spawnEnemies(){
-        for (int i = 0; i <MathUtils.random(1,4) ; i++) {
-            enemies.add(new Enemy(world, center.x + MathUtils.random(-476, 476),center.y + MathUtils.random(-269, 269),false));
+        enemies.add(new Enemy(world, center.x + MathUtils.random(-476, 476),center.y + MathUtils.random(-269, 269), randomChance(30),false));
+        if (enemies.get(0).getType()!= Enemy.EmapEnemyType.MINI_BOSS){
+            for (int i = 0; i <3 ; i++) {
+                enemies.add(new Enemy(world, center.x + MathUtils.random(-476, 476),center.y + MathUtils.random(-269, 269),false,false));
+            }
         }
     }
     public void spawnBoss(){
-        enemies.add(new Enemy(world, center.x ,center.y,true));
+        enemies.add(new Enemy(world, center.x ,center.y,false,true));
     }
 
 
@@ -101,6 +106,10 @@ public class Room {
 
     public LootPile getChest() {
         return chest;
+    }
+
+    public ArrayList<Enemy> getEnemies() {
+        return enemies;
     }
 
     public void dispose() {

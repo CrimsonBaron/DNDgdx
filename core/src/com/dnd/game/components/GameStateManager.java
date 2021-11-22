@@ -1,9 +1,6 @@
 package com.dnd.game.components;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Game;
 import com.dnd.game.DndGame;
-import com.dnd.game.states.CombatState;
 import com.dnd.game.states.DungeonState;
 import com.dnd.game.states.GameState;
 
@@ -17,7 +14,6 @@ public class GameStateManager {
 
     public enum State{
         TITLE,
-        COMBAT,
         DUNGEON
     }
 
@@ -37,7 +33,6 @@ public class GameStateManager {
     private GameState getState(State state) {
         switch(state) {
             case TITLE: break;
-            case COMBAT: return new CombatState(this);
             case DUNGEON: return  new DungeonState(this);
 
         }
