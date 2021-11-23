@@ -85,12 +85,13 @@ public class Player extends MapEntity implements ICombatInter {
 
 
     public void render(Batch batch) {
-        /*ShapeRenderer shapeRenderer = new ShapeRenderer();
+        ShapeRenderer shapeRenderer = new ShapeRenderer();
+        shapeRenderer.setProjectionMatrix(cam.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(1, 0, 0, 1); // Red line
-        shapeRenderer.line(this.body.getPosition().x*PPM, this.body.getPosition().y*PPM,mouseLoc.x, mouseLoc.y);
+        shapeRenderer.line(new Vector2(this.body.getPosition().x*PPM,this.body.getPosition().y*PPM),new Vector2(mouseLoc.x,mouseLoc.y));
         shapeRenderer.end();
-        shapeRenderer.dispose();*/
+
     }
 
     public void controller(float delta) {
