@@ -85,14 +85,12 @@ public class Player extends MapEntity implements ICombatInter {
 
 
     public void render(Batch batch) {
-
-
-        ShapeRenderer shapeRenderer = new ShapeRenderer();
+        /*ShapeRenderer shapeRenderer = new ShapeRenderer();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(1, 0, 0, 1); // Red line
-        shapeRenderer.line(mouseLoc.x, mouseLoc.y, this.body.getPosition().x, this.body.getPosition().y);
+        shapeRenderer.line(this.body.getPosition().x*PPM, this.body.getPosition().y*PPM,mouseLoc.x, mouseLoc.y);
         shapeRenderer.end();
-        shapeRenderer.dispose();
+        shapeRenderer.dispose();*/
     }
 
     public void controller(float delta) {
@@ -124,7 +122,7 @@ public class Player extends MapEntity implements ICombatInter {
             body.setLinearVelocity(body.getLinearVelocity().x, y * SPEED * delta);
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.J)) {
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
             updateLightAttackAnim = true;
         }
 
@@ -133,7 +131,7 @@ public class Player extends MapEntity implements ICombatInter {
         }
 
 
-        this.mouseLoc = new Vector3((Gdx.graphics.getWidth() - Gdx.input.getX()), (Gdx.graphics.getHeight() - Gdx.input.getY()), 0);
+        this.mouseLoc = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         cam.unproject(mouseLoc);
 
 
@@ -174,14 +172,15 @@ public class Player extends MapEntity implements ICombatInter {
 
             }
         }*/
-        /* RayCastCallback callback = new RayCastCallback() {
+
+         RayCastCallback callback = new RayCastCallback() {
             @Override
             public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
                 if (!currentPlayersRoom.getEnemies().isEmpty()) {
                     for (Enemy e : currentPlayersRoom.getEnemies()) {
                         if (fixture.getBody().getPosition() == e.getPosition()) {
                             e.damage(10);
-                            return 0;
+                            return 1;
                         }
                     }
                 }
@@ -191,23 +190,16 @@ public class Player extends MapEntity implements ICombatInter {
         };
 
         rayStart = getPosition();
-        rayEnd = new Vector2(getPosition().x, getPosition().y + 72);
-        if (n) {
-            rayEnd = new Vector2(getPosition().x, getPosition().y + 72);
-        }
-        if (s) {
-            rayEnd = new Vector2(getPosition().x, getPosition().y - 72);
-        }
-        if (e) {
-            rayEnd = new Vector2(getPosition().x + 72, getPosition().y);
-        }
-        if (w) {
-            rayEnd = new Vector2(getPosition().x - 72, getPosition().y);
-        }
+        rayEnd = new Vector2(mouseLoc.x/PPM, mouseLoc.y/PPM);
 
-        System.out.printf("n: %b e: %b s: %b w: %b \n", n, e, s, w);
+        System.out.println("body pos"+ this.body.getPosition().toString());
+        System.out.println("rayStart: "+rayStart.toString());
+        System.out.println("rayEmd: "+rayEnd.toString());
+
+
+
         world.rayCast(callback, rayStart, rayEnd);
-        updateLightAttackAnim = false;*/
+        updateLightAttackAnim = false;
     }
 
 

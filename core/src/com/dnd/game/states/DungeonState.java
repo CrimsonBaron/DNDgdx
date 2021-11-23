@@ -39,14 +39,13 @@ public class DungeonState extends GameState {
         pos = new Vector2(MathUtils.random(28) + 2, MathUtils.random(28) + 2);
         player = new Player(world, camera);
         CreateRoom(0);
-
+        player.setCurrentPlayersRoom(rooms[(int) pos.x][(int) pos.y]);
     }
 
     private void CreateRoom(int i) {
         rooms[(int) pos.x][(int) pos.y] = new Room(world, (int) pos.x, (int) pos.y, target);
         roomCount++;
         System.out.println("Room count"+roomCount);
-        player.setCurrentPlayersRoom(rooms[(int) pos.x][(int) pos.y]);
         generateRoomAdditions(i);
     }
 
@@ -170,6 +169,7 @@ public class DungeonState extends GameState {
             if (rooms[(int) pos.x][(int) pos.y] == null) {
                 CreateRoom(1);
             }
+            player.setCurrentPlayersRoom(rooms[(int) pos.x][(int) pos.y]);
         }
 
         if (player.getPosition().x < (target.x - 640) / PPM) {
@@ -178,6 +178,7 @@ public class DungeonState extends GameState {
             if (rooms[(int) pos.x][(int) pos.y] == null) {
                 CreateRoom(3);
             }
+            player.setCurrentPlayersRoom(rooms[(int) pos.x][(int) pos.y]);
         }
 
         if (player.getPosition().y > (target.y + 360) / PPM) {
@@ -186,6 +187,7 @@ public class DungeonState extends GameState {
             if (rooms[(int) pos.x][(int) pos.y] == null) {
                 CreateRoom(0);
             }
+            player.setCurrentPlayersRoom(rooms[(int) pos.x][(int) pos.y]);
         }
 
         if (player.getPosition().y < (target.y - 360) / PPM) {
@@ -194,6 +196,7 @@ public class DungeonState extends GameState {
             if (rooms[(int) pos.x][(int) pos.y] == null) {
                 CreateRoom(2);
             }
+            player.setCurrentPlayersRoom(rooms[(int) pos.x][(int) pos.y]);
         }
 
         for (int i = 0; i <rooms.length ; i++) {
