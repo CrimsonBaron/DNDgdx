@@ -12,6 +12,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.dnd.game.components.GameStateManager;
 import com.dnd.game.dungeon.Room;
+import com.dnd.game.entities.Enemy;
 import com.dnd.game.entities.Player;
 import com.dnd.game.utils.SceneBuilder;
 
@@ -162,6 +163,11 @@ public class DungeonState extends GameState {
             }
         }
 
+       if (!rooms[(int) pos.x][(int) pos.y].getEnemies().isEmpty()){
+           for (Enemy e: rooms[(int) pos.x][(int) pos.y].getEnemies()) {
+               e.AiControler(delta,player);
+           }
+       }
 
         if (player.getPosition().x > (target.x + 640) / PPM) {
             target.x += 1280;

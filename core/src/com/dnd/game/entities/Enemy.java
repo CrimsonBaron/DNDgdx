@@ -57,7 +57,7 @@ public class Enemy extends MapEntity implements ICombatInter {
         }
     }
 
-    public Enemy(World world, float x, float y ,boolean isMiniBoss,boolean isBoss) {
+    public Enemy(World world, float x, float y ,boolean isMiniBoss,boolean isBoss ) {
         this.world = world;
         this.x = x;
         this.y = y;
@@ -66,6 +66,18 @@ public class Enemy extends MapEntity implements ICombatInter {
         EmapEnemyType mapEnemy = getRandomEnemyType(isMiniBoss,isBoss);
         body = SceneBuilder.createBox(world,x,y, mapEnemy.getSize(), mapEnemy.getSize(), false,true);
         this.type=mapEnemy;
+    }
+
+    public void  AiControler(float delta, Player player){
+        Vector2 pPos = player.getPosition();
+        Vector2 dir = new Vector2(0,0);
+        dir.x = pPos.x - getPosition().x;
+        dir.y = pPos.x - getPosition().y;
+        double pre = Math.sqrt(dir.x*dir.x+dir.y*dir.y);
+        dir.x /= pre;
+        dir.y /= pre;
+        body.setTransform(new Vector2(getPosition().x+dir.x,getPosition().y+dir.y),body.getAngle());
+
     }
 
     private Body createEnemy(World world, float x, float y, int width, int height, boolean isStatic, boolean fixedRotation){
@@ -97,7 +109,6 @@ public class Enemy extends MapEntity implements ICombatInter {
         pBody.setLinearDamping(20);
         return pBody;
     }
-
 
     public EmapEnemyType getRandomEnemyType(boolean isMiniBoss,boolean isBoss){
         if (!isMiniBoss && !isBoss){
