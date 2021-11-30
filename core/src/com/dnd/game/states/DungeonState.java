@@ -41,6 +41,7 @@ public class DungeonState extends GameState {
         player = new Player(world, camera);
         CreateRoom(0);
         player.setCurrentPlayersRoom(rooms[(int) pos.x][(int) pos.y]);
+        rooms[(int) pos.x][(int) pos.y].spawnmEn();
     }
 
     private void CreateRoom(int i) {

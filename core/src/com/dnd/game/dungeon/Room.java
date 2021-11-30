@@ -83,6 +83,11 @@ public class Room {
             }
         }
     }
+
+    public void spawnmEn(){
+        enemies.add(new Enemy(world, center.x + MathUtils.random(-476, 476),center.y + MathUtils.random(-269, 269), randomChance(30),false));
+    }
+
     public void spawnBoss(){
         enemies.add(new Enemy(world, center.x ,center.y,false,true));
     }

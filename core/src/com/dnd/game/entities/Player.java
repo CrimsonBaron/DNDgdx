@@ -86,7 +86,7 @@ public class Player extends MapEntity implements ICombatInter {
         fd.shape = polyShape;
         fd.density = 1.f;
         fd.filter.categoryBits = Globals.BIT_PLAYER;
-        fd.filter.maskBits = Globals.BIT_ENEMY;
+        fd.filter.maskBits = Globals.BIT_WALL;
         fd.filter.groupIndex = 0;
 
 

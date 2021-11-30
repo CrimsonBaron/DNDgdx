@@ -64,19 +64,17 @@ public class Enemy extends MapEntity implements ICombatInter {
         this.hp=100f;
         this.isDead = false;
         EmapEnemyType mapEnemy = getRandomEnemyType(isMiniBoss,isBoss);
-        body = SceneBuilder.createBox(world,x,y, mapEnemy.getSize(), mapEnemy.getSize(), false,true);
+        body = createEnemy(world,x,y, mapEnemy.getSize(), mapEnemy.getSize(), false,true);
         this.type=mapEnemy;
     }
-
+        private Vector2 dir = new Vector2(0,0);
     public void  AiControler(float delta, Player player){
-        Vector2 pPos = player.getPosition();
-        Vector2 dir = new Vector2(0,0);
-        dir.x = pPos.x - getPosition().x;
-        dir.y = pPos.x - getPosition().y;
+        dir.x = player.getPosition().x - getPosition().x;
+        dir.y = player.getPosition().y - getPosition().y;
         double pre = Math.sqrt(dir.x*dir.x+dir.y*dir.y);
         dir.x /= pre;
         dir.y /= pre;
-        body.setTransform(new Vector2(getPosition().x+dir.x,getPosition().y+dir.y),body.getAngle());
+        body.setTransform(new Vector2(getPosition().x+dir.x/PPM,getPosition().y+dir.y/PPM),body.getAngle());
 
     }
 
@@ -100,7 +98,7 @@ public class Enemy extends MapEntity implements ICombatInter {
         FixtureDef fd = new FixtureDef();
         fd.shape = shape;
         fd.filter.categoryBits = Globals.BIT_ENEMY;
-        fd.filter.maskBits = Globals.BIT_ENEMY | Globals.BIT_PLAYER | Globals.BIT_WALL;
+        fd.filter.maskBits = Globals.BIT_ENEMY | Globals.BIT_WALL;
         fd.filter.groupIndex = 0;
         fd.density = 1.0f;
         pBody.createFixture(fd).setUserData(this);
