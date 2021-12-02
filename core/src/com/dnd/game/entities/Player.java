@@ -32,6 +32,9 @@ public class Player extends MapEntity implements ICombatInter {
     private Vector2 rayStart;
     private Vector2 rayEnd;
 
+    private Boolean isDead;
+    private float hp;
+
 
 
     private boolean updateLightAttackAnim = true;
@@ -67,6 +70,8 @@ public class Player extends MapEntity implements ICombatInter {
         this.rayEnd = new Vector2(0, 0);
         this.rayStart = new Vector2(0, 0);
         this.mouseLoc = new Vector3(0, 0, 0);
+        this.isDead = false;
+        this.hp = 100f;
     }
 
     private Body createPlayerHitBox(World world, int x, int y, int hx, int hy) {
@@ -366,6 +371,10 @@ public class Player extends MapEntity implements ICombatInter {
 
     @Override
     public void damage(float dmg) {
-
+        if (!isDead){this.hp-=dmg;}
+        if (hp < 0){
+            isDead = true;
+        }
+        System.out.println("player hp: "+ this.hp);
     }
 }
