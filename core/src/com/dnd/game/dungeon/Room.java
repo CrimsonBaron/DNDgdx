@@ -117,6 +117,10 @@ public class Room {
         return enemies;
     }
 
+    public void removeEnemy(Enemy e){
+        enemies.remove(e);
+    }
+
     public void dispose() {
         if (chest != null) {
             chest.dispose();

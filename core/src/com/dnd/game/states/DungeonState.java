@@ -3,6 +3,7 @@ package com.dnd.game.states;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -40,54 +41,11 @@ public class DungeonState extends GameState {
         player = new Player(world, camera);
         CreateRoom(0);
         player.setCurrentPlayersRoom(rooms[(int) pos.x][(int) pos.y]);
-        rooms[(int) pos.x][(int) pos.y].spawnmEn();
-        rooms[(int) pos.x][(int) pos.y].spawnmEn();
-        rooms[(int) pos.x][(int) pos.y].spawnmEn();
+       // rooms[(int) pos.x][(int) pos.y].spawnmEn();
+       // rooms[(int) pos.x][(int) pos.y].spawnmEn();
+       // rooms[(int) pos.x][(int) pos.y].spawnmEn();
 
-        world.setContactListener(new ContactListener() {
-            @Override
-            public void beginContact(Contact contact) {
-                if (contact.getFixtureA().getFilterData().categoryBits == Globals.BIT_PLAYER){
-                    for (int i = 0; i <rooms.length ; i++) {
-                        for (Room r:rooms[i]) {
-                            if (r!=null && !r.getEnemies().isEmpty() ){
-                                for (Enemy e: r.getEnemies()) {
-                                    if (contact.getFixtureB().getBody().getPosition() == e.getPosition()){
-                                        e.setAttack(true);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
-            @Override
-            public void endContact(Contact contact) {
-                /*for (int i = 0; i <rooms.length ; i++) {
-                    for (Room r:rooms[i]) {
-                        if (r!=null && !r.getEnemies().isEmpty() ){
-                            for (Enemy e: r.getEnemies()) {
-                                if (!e.isShouldMove() && contact.getFixtureA().getBody().getPosition() != e.getPosition() ){
-                                    e.setShouldMove(true);
-                                }
-                            }
-                        }
-                    }
-                }*/
-
-            }
-
-            @Override
-            public void preSolve(Contact contact, Manifold oldManifold) {
-
-            }
-
-            @Override
-            public void postSolve(Contact contact, ContactImpulse impulse) {
-
-            }
-        });
     }
 
     private void CreateRoom(int i) {
@@ -121,43 +79,47 @@ public class DungeonState extends GameState {
 
         if (enter != 0) {
             if (randomChance(70)) {
-                if (!checkIfBodyExits(target.x, target.y - 338)){
-                    SceneBuilder.createBox(world, target.x, target.y - 338, 130, 32, true, true);
-                }
                 if (!checkIfBodyExits(target.x, target.y - 720 + 338)) {
                     SceneBuilder.createBox(world, target.x, target.y - 720 + 338, 130, 32, true, true);
                 }
+                if (!checkIfBodyExits(target.x, target.y - 338)){
+                    SceneBuilder.createBox(world, target.x, target.y - 338, 130, 32, true, true);
+                }
+
             }
         }
         if (enter != 1 && !W) {
             if (randomChance(30)) {
-                if (!checkIfBodyExits(target.x - 620, target.y)){
-                    SceneBuilder.createBox(world, target.x - 620, target.y, 32, 120, true, true);
-                }
                 if (!checkIfBodyExits(target.x - 1280 + 620, target.y)) {
                     SceneBuilder.createBox(world, target.x - 1280 + 620, target.y, 32, 120, true, true);
                 }
+                if (!checkIfBodyExits(target.x - 620, target.y)){
+                    SceneBuilder.createBox(world, target.x - 620, target.y, 32, 120, true, true);
+                }
+
 
             }
         }
         if (enter != 2 && !N) {
             if (randomChance(30)) {
-                if (!checkIfBodyExits(target.x, target.y + 338)){
-                    SceneBuilder.createBox(world, target.x, target.y + 338, 130, 32, true, true);
-                }
                 if (!checkIfBodyExits(target.x, target.y + 720 - 338)) {
                     SceneBuilder.createBox(world, target.x, target.y + 720 - 338, 130, 32, true, true);
                 }
+                if (!checkIfBodyExits(target.x, target.y + 338)){
+                    SceneBuilder.createBox(world, target.x, target.y + 338, 130, 32, true, true);
+                }
+
             }
         }
         if (enter != 3 && !E) {
             if (randomChance(30)) {
-                if (!checkIfBodyExits(target.x + 620, target.y)) {
-                    SceneBuilder.createBox(world, target.x + 620, target.y, 32, 120, true, true);
-                }
                 if (!checkIfBodyExits(target.x + 1280 - 620, target.y)) {
                     SceneBuilder.createBox(world, target.x + 1280 - 620, target.y, 32, 120, true, true);
                 }
+                if (!checkIfBodyExits(target.x + 620, target.y)) {
+                    SceneBuilder.createBox(world, target.x + 620, target.y, 32, 120, true, true);
+                }
+
             }
         }
 
@@ -268,6 +230,10 @@ public class DungeonState extends GameState {
             }
         }
 
+        if (player.getDead()){
+            gsm.setState(GameStateManager.State.DUNGEON);
+        }
+
         cameraUpdate();
         batch.setProjectionMatrix(camera.combined);
     }
@@ -283,11 +249,17 @@ public class DungeonState extends GameState {
 
     @Override
     public void render() {
-        Gdx.gl.glClearColor(.25f, .25f, .25f, 1f);
+        Gdx.gl.glClearColor(0,0,0,1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         b2dr.render(world, camera.combined.cpy().scl(PPM));
         player.render(batch);
+
+       if (!player.getCurrentPlayersRoom().getEnemies().isEmpty()){
+           for (Enemy e: player.getCurrentPlayersRoom().getEnemies()) {
+               e.render(camera);
+           }
+       }
     }
 
     @Override

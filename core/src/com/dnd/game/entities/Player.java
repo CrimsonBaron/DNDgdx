@@ -3,6 +3,8 @@ package com.dnd.game.entities;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -13,8 +15,11 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.dnd.game.Globals;
 import com.dnd.game.dungeon.Room;
 import com.dnd.game.interfaces.ICombatInter;
+import com.dnd.game.utils.VisionData;
 import com.dnd.game.weapons.WeaponType;
 
+
+import java.util.HashMap;
 
 import static com.dnd.game.Globals.*;
 
@@ -35,7 +40,11 @@ public class Player extends MapEntity implements ICombatInter {
     private Boolean isDead;
     private float hp;
 
-
+    private static final float vissionDistance = 1280 ;
+    private static final int rayCount = 1500;
+    private RayCastCallback vissionCallback;
+    private HashMap<Integer, VisionData> visionRays;
+    private int currentI = 0;
 
     private boolean updateLightAttackAnim = true;
     private boolean updateHeavyAttackAnim = true;
@@ -72,6 +81,21 @@ public class Player extends MapEntity implements ICombatInter {
         this.mouseLoc = new Vector3(0, 0, 0);
         this.isDead = false;
         this.hp = 100f;
+
+        this.vissionCallback = new RayCastCallback() {
+            @Override
+            public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
+                if (fixture.getFilterData().categoryBits == BIT_WALL){
+                    if (!visionRays.containsKey(currentI)){
+                        visionRays.put(currentI,new VisionData(point.cpy(),fixture));
+                    } else if (visionRays.get(currentI).point.dst(getPosition()) > point.dst(getPosition())) {
+                        visionRays.put(currentI,new VisionData(point.cpy(),fixture));
+                    }
+                }
+                return 0;
+            }
+        };
+        this.visionRays = new HashMap<Integer, VisionData>();
     }
 
     private Body createPlayerHitBox(World world, int x, int y, int hx, int hy) {
@@ -131,14 +155,50 @@ public class Player extends MapEntity implements ICombatInter {
 
         ShapeRenderer shapeRenderer = new ShapeRenderer();
         shapeRenderer.setProjectionMatrix(cam.combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(1, 0, 0, 1); // Red line
-        shapeRenderer.line(new Vector2(this.body.getPosition().x * PPM, this.body.getPosition().y * PPM), new Vector2(mouseLoc.x, mouseLoc.y));
+
+
+        if (!visionRays.isEmpty()){
+            Vector2 pos = this.body.getPosition();
+            Gdx.gl20.glEnable(GL20.GL_BLEND);
+            Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            //shapeRenderer.setColor(1, 0, 0, 1); // Red line
+            //shapeRenderer.line(new Vector2(this.body.getPosition().x * PPM, this.body.getPosition().y * PPM), new Vector2(mouseLoc.x, mouseLoc.y));
+            shapeRenderer.identity();
+            shapeRenderer.setColor(.25f, .25f, .25f, 0.5f);
+            Gdx.gl20.glLineWidth(10);
+            for (Integer i : visionRays.keySet()){
+                shapeRenderer.line(new Vector2(pos.x*PPM,pos.y*PPM),new Vector2(visionRays.get(i).point.x*PPM,visionRays.get(i).point.y*PPM));
+            }
+
+            double angle = (Math.PI * 2) / rayCount;
+            for (int i = 0; i < rayCount; i++) {
+                if (!visionRays.containsKey(i)){
+                    double rotAmmount = angle * i;
+                    Vector2 v = new Vector2(0,1).scl(vissionDistance);
+                    v.rotateRad((float) rotAmmount);
+                    v.add(getPosition());
+                    shapeRenderer.line(new Vector2(pos.x*PPM,pos.y*PPM),new Vector2(v.x*PPM,v.y*PPM));
+                }
+            }
+            shapeRenderer.end();
+
+            visionRays.clear();
+        }
+
+        Gdx.gl20.glLineWidth(1);
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.identity();
+        shapeRenderer.setColor(Color.GREEN);
+        shapeRenderer.circle(getPosition().x*PPM, getPosition().y*PPM, 32, 10);
         shapeRenderer.end();
 
     }
 
     public void controller(float delta) {
+
+        visionRays.clear();
 
         float x = 0, y = 0;
 
@@ -254,6 +314,28 @@ public class Player extends MapEntity implements ICombatInter {
         this.mouseLoc = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         cam.unproject(mouseLoc);
 
+        castRays();
+
+    }
+
+    public void castRays(){
+        double angle = (Math.PI*2) / rayCount;
+        for (int i = 0; i < rayCount; i++) {
+            double ammountRot = angle*i;
+            Vector2 v = new Vector2(0,1).scl(vissionDistance);
+            v.rotateRad((float) ammountRot);
+            v.add(getPosition());
+            currentI = i;
+            world.rayCast(vissionCallback, getPosition(),v);
+        }
+
+        for (int i = 0; i < rayCount; ++i){
+            if (visionRays.containsKey(i)){
+                Fixture f = visionRays.get(i).fixture;
+                //implemetn visibility logic with visible interface
+            }
+        }
+
 
     }
 
@@ -268,6 +350,8 @@ public class Player extends MapEntity implements ICombatInter {
 
     public void setCurrentPlayersRoom(Room currentPlayersRoom) {
         this.currentPlayersRoom = currentPlayersRoom;
+        visionRays.clear();
+
     }
 
     public void dispose() {
@@ -372,9 +456,13 @@ public class Player extends MapEntity implements ICombatInter {
     @Override
     public void damage(float dmg) {
         if (!isDead){this.hp-=dmg;}
-        if (hp < 0){
+        if (hp <  0){
             isDead = true;
         }
         System.out.println("player hp: "+ this.hp);
+    }
+
+    public Boolean getDead() {
+        return isDead;
     }
 }

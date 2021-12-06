@@ -1,12 +1,17 @@
 package com.dnd.game.entities;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.dnd.game.Globals;
 import com.dnd.game.interfaces.ICombatInter;
 import com.dnd.game.utils.MathUtils;
 import com.dnd.game.utils.SceneBuilder;
+import com.sun.imageio.plugins.gif.GIFImageMetadataFormat;
+
+import java.util.ArrayList;
 
 import static com.dnd.game.Globals.PPM;
 
@@ -19,12 +24,37 @@ public class Enemy extends MapEntity implements ICombatInter {
     private Player player;
     private boolean shouldMove;
     private boolean attack;
+    private Vector2 rayEnd = new Vector2(0, 0);
+    private ShapeRenderer shapeRenderer;
+    private ArrayList<Fixture> hitFixtures;
 
     @Override
     public void lightAttack() {
-        if (player != null) {
-            player.damage(10);
+        RayCastCallback callback = new RayCastCallback() {
+            @Override
+            public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
+                if (fixture.getFilterData().categoryBits == Globals.BIT_PLAYER && hitFixtures.isEmpty()) {
+                    if (player != null && player.getPosition() == fixture.getBody().getPosition()) {
+                        player.damage(type.getDmg());
+                        hitFixtures.add(fixture);
+                        return 0;
+                    }
+                }
+
+                return -1;
+            }
+        };
+        float angle = 0;
+        for (int i = 0; i < 50; i++) {
+            float x = (float) Math.sin((double) angle);
+            float y = (float) Math.cos((double) angle);
+            angle += 2 * Math.PI / 50;
+            rayEnd = new Vector2(getPosition().x + x, getPosition().y + y).sub(getPosition().x, getPosition().y).nor().scl(5).add(getPosition().x, getPosition().y);
+            world.rayCast(callback, getPosition(), rayEnd);
+
         }
+        attack = false;
+
     }
 
     @Override
@@ -54,18 +84,34 @@ public class Enemy extends MapEntity implements ICombatInter {
 
 
     public enum EmapEnemyType {
-        NORMAL(64),
-        MINI_BOSS(128),
-        BOSS(256);
+        NORMAL(64, 50f, 10f,1f ),
+        MINI_BOSS(128,100f,25f,3f),
+        BOSS(256,250f,30f,4f);
 
         private int size;
+        private float dmg, hp, attackInterval;
 
-        EmapEnemyType(int size) {
+        EmapEnemyType(int size, float hp, float dmg, float attackInterval) {
             this.size = size;
+            this.hp = hp;
+            this.dmg = dmg;
+            this.attackInterval = attackInterval;
         }
 
         public int getSize() {
             return size;
+        }
+
+        public float getDmg() {
+            return dmg;
+        }
+
+        public float getHp() {
+            return hp;
+        }
+
+        public float getAttackInterval() {
+            return attackInterval;
         }
     }
 
@@ -73,22 +119,24 @@ public class Enemy extends MapEntity implements ICombatInter {
         this.world = world;
         this.x = x;
         this.y = y;
-        this.hp = 100f;
         this.isDead = false;
         EmapEnemyType mapEnemy = getRandomEnemyType(isMiniBoss, isBoss);
         body = createEnemy(world, x, y, mapEnemy.getSize(), mapEnemy.getSize(), false, true);
         this.type = mapEnemy;
+        this.hp = type.getHp();
         this.shouldMove = true;
-        this.attack = false;
-
+        this.attack = true;
+        this.hitFixtures = new ArrayList<Fixture>();
+        this.attackPeriod = type.getAttackInterval();
     }
 
     private Vector2 dir = new Vector2(0, 0);
-    private float attackPeriod = 1f;
+    private float attackPeriod;
     private float attackTime = 0f;
 
+
     public void AiControler(float delta, Player player) {
-        if (shouldMove) {
+        if (shouldMove && !isDead) {
             dir.x = player.getPosition().x - getPosition().x;
             dir.y = player.getPosition().y - getPosition().y;
             double pre = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
@@ -96,17 +144,12 @@ public class Enemy extends MapEntity implements ICombatInter {
             dir.y /= pre;
             //body.setLinearVelocity(getPosition().x+dir.x/PPM,getPosition().y+dir.y/PPM);
             body.setTransform(new Vector2(getPosition().x + dir.x / PPM, getPosition().y + dir.y / PPM), body.getAngle());
-
             if (attack) {
-                attackTime += Gdx.graphics.getDeltaTime();
-                if (attackTime > attackPeriod) {
-                    attackTime -= attackPeriod;
-                    lightAttack();
-                    attack = false;
-                }
+                lightAttack();
             }
         }
     }
+
 
     private Body createEnemy(World world, float x, float y, int width, int height, boolean isStatic, boolean fixedRotation) {
         Body pBody;
@@ -136,6 +179,27 @@ public class Enemy extends MapEntity implements ICombatInter {
 
         pBody.setLinearDamping(100f);
         return pBody;
+    }
+
+    public void render(Camera cam) {
+        if (!isDead) {
+            if (!attack) {
+                attackTime += Gdx.graphics.getDeltaTime();
+                if (attackTime > attackPeriod) {
+                    attackTime -= attackPeriod;
+                    attack = true;
+                    hitFixtures.clear();
+                }
+            }
+
+
+            shapeRenderer = new ShapeRenderer();
+            shapeRenderer.setProjectionMatrix(cam.combined);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(0, 1, 0, 1);
+            shapeRenderer.line(new Vector2(getPosition().x * PPM, getPosition().y * PPM), new Vector2(this.rayEnd.x * PPM, this.rayEnd.y * PPM));
+            shapeRenderer.end();
+        }
     }
 
     public EmapEnemyType getRandomEnemyType(boolean isMiniBoss, boolean isBoss) {
@@ -174,5 +238,21 @@ public class Enemy extends MapEntity implements ICombatInter {
 
     public void setAttack(boolean attack) {
         this.attack = attack;
+    }
+
+    public boolean isDead() {
+        return isDead;
+    }
+
+    public void setDead(boolean dead) {
+        isDead = dead;
+    }
+
+    public Body getBody() {
+        return body;
+    }
+
+    public void setBody(Body body) {
+        this.body = body;
     }
 }
