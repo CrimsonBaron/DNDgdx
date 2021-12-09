@@ -1,12 +1,16 @@
 package com.dnd.game.entities;
 
+import box2dLight.PointLight;
+import box2dLight.RayHandler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.dnd.game.Globals;
 import com.dnd.game.interfaces.ICombatInter;
+import com.dnd.game.utils.LightBuilder;
 import com.dnd.game.utils.MathUtils;
 import com.dnd.game.utils.SceneBuilder;
 import com.sun.imageio.plugins.gif.GIFImageMetadataFormat;
@@ -128,6 +132,8 @@ public class Enemy extends MapEntity implements ICombatInter {
         this.attack = true;
         this.hitFixtures = new ArrayList<Fixture>();
         this.attackPeriod = type.getAttackInterval();
+
+
     }
 
     private Vector2 dir = new Vector2(0, 0);
@@ -148,6 +154,7 @@ public class Enemy extends MapEntity implements ICombatInter {
                 lightAttack();
             }
         }
+
     }
 
 
@@ -191,6 +198,7 @@ public class Enemy extends MapEntity implements ICombatInter {
                     hitFixtures.clear();
                 }
             }
+
 
 
             shapeRenderer = new ShapeRenderer();
