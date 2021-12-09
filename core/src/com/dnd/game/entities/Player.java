@@ -94,7 +94,7 @@ public class Player extends MapEntity implements ICombatInter {
         this.hp = 100f;
         this.rayHandler = new RayHandler(world);
         this.flashLight = LightBuilder.createConeLight(rayHandler, this.body, Color.GRAY, 50, -90, 15);
-        this.pointLight = LightBuilder.createPointLightAtBodyLoc(rayHandler, this.body, Color.SCARLET, 10);
+        this.pointLight = LightBuilder.createPointLightAtBodyLoc(rayHandler, this.body, Color.GRAY, 30);
        /* this.vissionCallback = new RayCastCallback() {
             @Override
             public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
