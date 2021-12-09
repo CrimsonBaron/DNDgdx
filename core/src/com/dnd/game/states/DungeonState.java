@@ -1,5 +1,6 @@
 package com.dnd.game.states;
 
+import box2dLight.RayHandler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
@@ -30,6 +31,8 @@ public class DungeonState extends GameState {
     private Vector2 pos;
     private int roomCount = 0;
 
+    private RayHandler rayHandler;
+
 
     public DungeonState(GameStateManager gsm) {
         super(gsm);
@@ -37,8 +40,9 @@ public class DungeonState extends GameState {
         b2dr = new Box2DDebugRenderer();
         target = new Vector2(0, 0);
         rooms = new Room[32][32];
+        rayHandler = new RayHandler(world);
         pos = new Vector2(MathUtils.random(28) + 2, MathUtils.random(28) + 2);
-        player = new Player(world, camera);
+        player = new Player(world, camera,rayHandler);
         CreateRoom(0);
         player.setCurrentPlayersRoom(rooms[(int) pos.x][(int) pos.y]);
        // rooms[(int) pos.x][(int) pos.y].spawnmEn();
@@ -233,7 +237,8 @@ public class DungeonState extends GameState {
         if (player.getDead()){
             gsm.setState(GameStateManager.State.DUNGEON);
         }
-
+        rayHandler.update();
+        rayHandler.setCombinedMatrix(camera.combined.cpy().scl(PPM));
         cameraUpdate();
         batch.setProjectionMatrix(camera.combined);
     }
@@ -260,6 +265,8 @@ public class DungeonState extends GameState {
                e.render(camera);
            }
        }
+
+       rayHandler.render();
     }
 
     @Override
@@ -267,7 +274,6 @@ public class DungeonState extends GameState {
         b2dr.dispose();
         world.dispose();
         player.dispose();
-
         for (int i = 0; i <rooms.length ; i++) {
             for (Room r:rooms[i]) {
                 if (r!=null){

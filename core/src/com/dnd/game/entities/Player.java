@@ -20,9 +20,11 @@ import com.dnd.game.dungeon.Room;
 import com.dnd.game.interfaces.ICombatInter;
 import com.dnd.game.utils.LightBuilder;
 import com.dnd.game.utils.VisionData;
+import com.dnd.game.weapons.Bullet;
 import com.dnd.game.weapons.WeaponType;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import static com.dnd.game.Globals.*;
@@ -69,10 +71,12 @@ public class Player extends MapEntity implements ICombatInter {
     private float lightTimer = 0f;
     private float lightPeriod = 0.05f;
 
+    private ArrayList<Bullet> bullets;
+
     private WeaponType weaponType = WeaponType.SWORD;
 
 
-    public Player(World world, OrthographicCamera cam) {
+    public Player(World world, OrthographicCamera cam, RayHandler rayHandler) {
         this.cam = cam;
 
 
@@ -92,9 +96,10 @@ public class Player extends MapEntity implements ICombatInter {
         this.mouseLoc = new Vector3(0, 0, 0);
         this.isDead = false;
         this.hp = 100f;
-        this.rayHandler = new RayHandler(world);
+        this.rayHandler = rayHandler;
         this.flashLight = LightBuilder.createConeLight(rayHandler, this.body, Color.GRAY, 50, -90, 15);
         this.pointLight = LightBuilder.createPointLightAtBodyLoc(rayHandler, this.body, Color.GRAY, 30);
+        this.bullets = new ArrayList<>();
        /* this.vissionCallback = new RayCastCallback() {
             @Override
             public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
@@ -181,7 +186,7 @@ public class Player extends MapEntity implements ICombatInter {
         ShapeRenderer shapeRenderer = new ShapeRenderer();
         shapeRenderer.setProjectionMatrix(cam.combined);
 
-        rayHandler.render();
+
 
        /*- if (!visionRays.isEmpty()) {
             Vector2 pos = this.body.getPosition();
@@ -349,8 +354,8 @@ public class Player extends MapEntity implements ICombatInter {
         flashLight.setDirection(angle);
         flashLight.setPosition(getPosition());
 
-        rayHandler.update();
-        rayHandler.setCombinedMatrix(cam.combined.cpy().scl(PPM));
+
+
         // castRays();
 
     }
@@ -430,7 +435,8 @@ public class Player extends MapEntity implements ICombatInter {
         };
 
         setRayCastLocationAndCastRay(callback);
-        flashLight.setColor(Color.CYAN);
+
+        //flashLight.setColor(Color.CYAN);
 
     }
 
@@ -455,7 +461,7 @@ public class Player extends MapEntity implements ICombatInter {
         };
 
         setRayCastLocationAndCastRay(callback);
-        flashLight.setColor(Color.RED);
+        //flashLight.setColor(Color.RED);
     }
 
     private void setRayCastLocationAndCastRay(RayCastCallback callback) {
@@ -468,6 +474,15 @@ public class Player extends MapEntity implements ICombatInter {
 
 
         world.rayCast(callback, rayStart, rayEnd);
+
+        bullets.add(new Bullet(rayHandler,this,world,20,rayEnd,rayStart,50));
+
+        for (Bullet b: bullets) {
+            if (b.getBody()!= null){
+                b.fire();
+            }
+        }
+
     }
 
     @Override
@@ -489,7 +504,7 @@ public class Player extends MapEntity implements ICombatInter {
         };
 
         setRayCastLocationAndCastRay(callback);
-        flashLight.setColor(Color.GOLD);
+        //flashLight.setColor(Color.GOLD);
     }
 
     @Override
