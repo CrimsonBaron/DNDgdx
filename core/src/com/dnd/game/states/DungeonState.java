@@ -3,7 +3,9 @@ package com.dnd.game.states;
 import box2dLight.RayHandler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -31,8 +33,10 @@ public class DungeonState extends GameState {
     private Room[][] rooms;
     private Vector2 pos;
     private int roomCount = 18;
+    private int maxRooms = 20;
 
     private RayHandler rayHandler;
+    private int state = 0;
 
 
     public DungeonState(GameStateManager gsm) {
@@ -46,7 +50,7 @@ public class DungeonState extends GameState {
         player = new Player(world, camera,rayHandler);
         CreateRoom(0);
         player.setCurrentPlayersRoom(rooms[(int) pos.x][(int) pos.y]);
-       rooms[(int) pos.x][(int) pos.y].spawnmEn();
+       //rooms[(int) pos.x][(int) pos.y].spawnmEn();
        // rooms[(int) pos.x][(int) pos.y].spawnmEn();
        // rooms[(int) pos.x][(int) pos.y].spawnmEn();
 
@@ -133,7 +137,7 @@ public class DungeonState extends GameState {
         }
 
         if (roomCount%2==1 && randomChance(30) && roomCount > 1){
-            rooms[(int) pos.x][(int) pos.y].spawnChest();
+            rooms[(int) pos.x][(int) pos.y].spawnChest(player);
         }
 
         if (roomCount%2==1 && randomChance(70) && roomCount > 1){
@@ -238,9 +242,16 @@ public class DungeonState extends GameState {
         if (player.getDead() ){
             gsm.setState(GameStateManager.State.DUNGEON);
         }
-        if (rooms[(int) pos.x][(int) pos.y].getEnemies().get(0).getType() == Enemy.EmapEnemyType.BOSS && rooms[(int) pos.x][(int) pos.y] .getEnemies().get(0).isDead()){
-            gsm.setState(GameStateManager.State.DUNGEON);
-        }
+      /*  if (!rooms[(int) pos.x][(int) pos.y].getEnemies().isEmpty()&&rooms[(int) pos.x][(int) pos.y].getEnemies().get(0).getType() == Enemy.EmapEnemyType.BOSS && rooms[(int) pos.x][(int) pos.y] .getEnemies().get(0).isDead()){
+           /* if (state == 0){
+                gsm.setState(GameStateManager.State.TITLE);
+                state++;
+            }else{
+                gsm.setState(GameStateManager.State.DUNGEON);
+                state--;
+            }
+            System.exit(0);
+        }*/
         rayHandler.update();
         rayHandler.setCombinedMatrix(camera.combined.cpy().scl(PPM));
         cameraUpdate();
@@ -255,7 +266,7 @@ public class DungeonState extends GameState {
         camera.update();
     }
 
-
+    private BitmapFont font = new BitmapFont();
     @Override
     public void render() {
         Gdx.gl.glClearColor(0,0,0,1);
@@ -264,13 +275,30 @@ public class DungeonState extends GameState {
         b2dr.render(world, camera.combined.cpy().scl(PPM));
         player.render(batch);
 
+
        if (!player.getCurrentPlayersRoom().getEnemies().isEmpty()){
            for (Enemy e: player.getCurrentPlayersRoom().getEnemies()) {
                e.render(camera, batch);
            }
        }
 
+        if (!rooms[(int) pos.x][(int) pos.y].getEnemies().isEmpty()&&rooms[(int) pos.x][(int) pos.y].getEnemies().get(0).getType() == Enemy.EmapEnemyType.BOSS && rooms[(int) pos.x][(int) pos.y] .getEnemies().get(0).isDead()){
+
+           // gsm.setState(GameStateManager.State.DUNGEON);
+            System.exit(0);
+        }
        rayHandler.render();
+        batch.begin();
+            font.setColor(Color.FOREST);
+            font.draw(batch,"HP: "+player.getHp()+"/100", target.x-570, target.y+300);
+            font.draw(batch,"POTIONS: "+player.getPotion(), target.x-570, target.y+275);
+        int x=450,y=300;
+        for (Enemy e: player.getCurrentPlayersRoom().getEnemies()) {
+            font.draw(batch,e.getType().toString()+": HP: "+e.getHp()+"/"+e.getType().getHp(),target.x+x,target.y+y);
+            y -= 25;
+        }
+            font.draw(batch,"ROOMS TILL BOSS: "+(maxRooms-roomCount),target.x-570,target.y-300);
+        batch.end();
     }
 
     @Override

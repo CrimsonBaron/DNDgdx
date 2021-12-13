@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -24,6 +25,7 @@ import com.dnd.game.weapons.Bullet;
 import com.dnd.game.weapons.WeaponType;
 
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -72,6 +74,7 @@ public class Player extends MapEntity implements ICombatInter {
     private float lightPeriod = 0.05f;
 
     private ArrayList<Bullet> bullets;
+    private int potion = 10;
 
     private WeaponType weaponType = WeaponType.GUN;
 
@@ -343,6 +346,10 @@ public class Player extends MapEntity implements ICombatInter {
             }
         }
 
+        if (hp < 50){
+            hp +=20;
+            potion--;
+        }
 
         this.mouseLoc = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         cam.unproject(mouseLoc);
@@ -535,6 +542,18 @@ public class Player extends MapEntity implements ICombatInter {
 
     public RayHandler getRayHandler() {
         return rayHandler;
+    }
+
+    public int getPotion() {
+        return potion;
+    }
+
+    public void setPotion(int potion) {
+        this.potion = potion;
+    }
+
+    public float getHp() {
+        return hp;
     }
 
     public ArrayList<Bullet> getBullets() {

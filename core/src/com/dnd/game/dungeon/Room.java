@@ -72,8 +72,8 @@ public class Room {
         }
     }
 
-    public void spawnChest() {
-        chest = new LootPile(world, center.x + MathUtils.random(-376, 376), center.y + MathUtils.random(-169, 169));
+    public void spawnChest(Player p) {
+        chest = new LootPile(world, center.x + MathUtils.random(-376, 376), center.y + MathUtils.random(-169, 169),p);
         world.setContactListener(chest);
     }
 

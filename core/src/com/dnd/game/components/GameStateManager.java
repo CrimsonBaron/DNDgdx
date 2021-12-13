@@ -32,7 +32,7 @@ public class GameStateManager {
 
     private GameState getState(State state) {
         switch(state) {
-            case TITLE: break;
+            case TITLE: return  new DungeonState(this);
             case DUNGEON: return  new DungeonState(this);
 
         }

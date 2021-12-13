@@ -11,14 +11,16 @@ import com.dnd.game.utils.SceneBuilder;
 public class LootPile extends InteractableEntity {
     private boolean interactable;
     private boolean openned;
+    private Player p;
 
-    public LootPile(World world, float x, float y) {
+    public LootPile(World world, float x, float y, Player p) {
         this.width = 128;
         this.height = 128;
         this.body = SceneBuilder.createBox(world, x, y, width, height, true, true);
         this.world = world;
         this.interactable = false;
         this.openned = false;
+        this.p = p;
     }
 
     @Override
@@ -26,6 +28,7 @@ public class LootPile extends InteractableEntity {
         super.update(delta);
         if (Gdx.input.isKeyPressed(Input.Keys.E) && !openned){
             System.out.println("chest openned");
+            p.setPotion(p.getPotion()+1);
             openned = true;
         }
     }

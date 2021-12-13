@@ -297,6 +297,10 @@ public class Enemy extends MapEntity implements ICombatInter {
         this.body = body;
     }
 
+    public float getHp() {
+        return hp;
+    }
+
     public void dispose(){
         img.dispose();
     }
