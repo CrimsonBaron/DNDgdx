@@ -73,7 +73,7 @@ public class Player extends MapEntity implements ICombatInter {
 
     private ArrayList<Bullet> bullets;
 
-    private WeaponType weaponType = WeaponType.SWORD;
+    private WeaponType weaponType = WeaponType.GUN;
 
 
     public Player(World world, OrthographicCamera cam, RayHandler rayHandler) {
@@ -262,17 +262,17 @@ public class Player extends MapEntity implements ICombatInter {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.Q) {
-                    weaponType = WeaponType.SWORD;
+                   // weaponType = WeaponType.SWORD;
                     System.out.println(weaponType.toString());
                     return true;
                 }
                 if (keycode == Input.Keys.E) {
-                    weaponType = WeaponType.BIGSWORD;
+                    //weaponType = WeaponType.BIGSWORD;
                     System.out.println(weaponType.toString());
                     return true;
                 }
                 if (keycode == Input.Keys.R) {
-                    weaponType = WeaponType.GUN;
+                    //weaponType = WeaponType.GUN;
                     System.out.println(weaponType.toString());
                     return true;
                 }
@@ -295,7 +295,9 @@ public class Player extends MapEntity implements ICombatInter {
                     switch (weaponType) {
                         case SWORD:
                             if (updateLightAttackAnim) {
-                                lightAttack();
+                                if (mouseLoc.x != getPosition().x && mouseLoc.y != getPosition().y){
+                                    lightAttack();
+                                }
                                 updateLightAttackAnim = false;
                             }
                             break;
@@ -354,7 +356,22 @@ public class Player extends MapEntity implements ICombatInter {
         flashLight.setDirection(angle);
         flashLight.setPosition(getPosition());
 
-
+        ArrayList<Bullet> prevBullet = new ArrayList<>();
+        if (!bullets.isEmpty()){
+            for(Bullet b : bullets){
+                if (b.isActie()){
+                    b.fire();
+                }else{
+                    prevBullet.add(b);
+                }
+            }
+            if (!prevBullet.isEmpty()){
+                for (Bullet b: prevBullet) {
+                    bullets.remove(b);
+                }
+                prevBullet.clear();
+            }
+        }
 
         // castRays();
 
@@ -475,13 +492,7 @@ public class Player extends MapEntity implements ICombatInter {
 
         world.rayCast(callback, rayStart, rayEnd);
 
-        bullets.add(new Bullet(rayHandler,this,world,20,rayEnd,rayStart,50));
-
-        for (Bullet b: bullets) {
-            if (b.getBody()!= null){
-                b.fire();
-            }
-        }
+        bullets.add(new Bullet(rayHandler,this,world,5,rayEnd,rayStart,500));
 
     }
 
@@ -520,5 +531,13 @@ public class Player extends MapEntity implements ICombatInter {
 
     public Boolean getDead() {
         return isDead;
+    }
+
+    public RayHandler getRayHandler() {
+        return rayHandler;
+    }
+
+    public ArrayList<Bullet> getBullets() {
+        return bullets;
     }
 }

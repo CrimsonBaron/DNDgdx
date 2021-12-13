@@ -5,9 +5,12 @@ import box2dLight.RayHandler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.dnd.game.Globals;
 import com.dnd.game.interfaces.ICombatInter;
 import com.dnd.game.utils.LightBuilder;
@@ -32,6 +35,13 @@ public class Enemy extends MapEntity implements ICombatInter {
     private ShapeRenderer shapeRenderer;
     private ArrayList<Fixture> hitFixtures;
 
+    private PointLight pointLight;
+    private RayHandler rayHandler;
+
+    private boolean  spawnLight = false;
+
+    private Texture img;
+
     @Override
     public void lightAttack() {
         RayCastCallback callback = new RayCastCallback() {
@@ -53,12 +63,15 @@ public class Enemy extends MapEntity implements ICombatInter {
             float x = (float) Math.sin((double) angle);
             float y = (float) Math.cos((double) angle);
             angle += 2 * Math.PI / 50;
-            rayEnd = new Vector2(getPosition().x + x, getPosition().y + y).sub(getPosition().x, getPosition().y).nor().scl(5).add(getPosition().x, getPosition().y);
-            world.rayCast(callback, getPosition(), rayEnd);
+            rayEnd = new Vector2(getPosition().x + x, getPosition().y + y).sub(getPosition().x, getPosition().y).scl(5).add(getPosition().x, getPosition().y);
+            if (rayEnd.x != 0 && rayEnd.y !=0){
+                world.rayCast(callback, getPosition(), rayEnd);
+            }
+
 
         }
-        attack = false;
 
+        attack = false;
     }
 
     @Override
@@ -88,18 +101,20 @@ public class Enemy extends MapEntity implements ICombatInter {
 
 
     public enum EmapEnemyType {
-        NORMAL(64, 50f, 10f,1f ),
-        MINI_BOSS(128,100f,25f,3f),
-        BOSS(256,250f,30f,4f);
+        NORMAL(64, 50f, 10f,1f,"../data/textures/sawBlade128.png" ),
+        MINI_BOSS(128,100f,25f,3f,"../data/textures/sawBlade256.png"),
+        BOSS(256,250f,30f,4f,"../data/textures/sawBlade512.png");
 
         private int size;
         private float dmg, hp, attackInterval;
+        private String text;
 
-        EmapEnemyType(int size, float hp, float dmg, float attackInterval) {
+        EmapEnemyType(int size, float hp, float dmg, float attackInterval,String text) {
             this.size = size;
             this.hp = hp;
             this.dmg = dmg;
             this.attackInterval = attackInterval;
+            this.text = text;
         }
 
         public int getSize() {
@@ -117,6 +132,10 @@ public class Enemy extends MapEntity implements ICombatInter {
         public float getAttackInterval() {
             return attackInterval;
         }
+
+        public String getText() {
+            return text;
+        }
     }
 
     public Enemy(World world, float x, float y, boolean isMiniBoss, boolean isBoss) {
@@ -132,6 +151,7 @@ public class Enemy extends MapEntity implements ICombatInter {
         this.attack = true;
         this.hitFixtures = new ArrayList<Fixture>();
         this.attackPeriod = type.getAttackInterval();
+        this.img = new Texture(type.getText());
 
 
     }
@@ -151,8 +171,17 @@ public class Enemy extends MapEntity implements ICombatInter {
             //body.setLinearVelocity(getPosition().x+dir.x/PPM,getPosition().y+dir.y/PPM);
             body.setTransform(new Vector2(getPosition().x + dir.x / PPM, getPosition().y + dir.y / PPM), body.getAngle());
             if (attack) {
-                lightAttack();
+               try{
+                   lightAttack();
+               }catch (Error e){
+                   System.out.println(e);
+               }
             }
+        }
+
+        if (rayHandler != null && spawnLight){
+            this.pointLight = LightBuilder.createPointLightAtBodyLoc(rayHandler,body,Color.CHARTREUSE,0);
+            spawnLight = false;
         }
 
     }
@@ -175,6 +204,7 @@ public class Enemy extends MapEntity implements ICombatInter {
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(width / 2 / PPM, height / 2 / PPM);
 
+
         FixtureDef fd = new FixtureDef();
         fd.shape = shape;
         fd.filter.categoryBits = Globals.BIT_ENEMY;
@@ -188,7 +218,7 @@ public class Enemy extends MapEntity implements ICombatInter {
         return pBody;
     }
 
-    public void render(Camera cam) {
+    public void render(Camera cam, Batch batch) {
         if (!isDead) {
             if (!attack) {
                 attackTime += Gdx.graphics.getDeltaTime();
@@ -198,8 +228,10 @@ public class Enemy extends MapEntity implements ICombatInter {
                     hitFixtures.clear();
                 }
             }
-
-
+            batch.setProjectionMatrix(cam.combined);
+            batch.begin();
+            batch.draw(img,(body.getPosition().x*PPM)-(img.getWidth()/2),(body.getPosition().y*PPM)-(img.getHeight()/2));
+            batch.end();
 
             shapeRenderer = new ShapeRenderer();
             shapeRenderer.setProjectionMatrix(cam.combined);
@@ -234,6 +266,7 @@ public class Enemy extends MapEntity implements ICombatInter {
 
     public void setPlayer(Player player) {
         this.player = player;
+        this.rayHandler = player.getRayHandler();
     }
 
     public void setShouldMove(boolean shouldMove) {
@@ -262,5 +295,9 @@ public class Enemy extends MapEntity implements ICombatInter {
 
     public void setBody(Body body) {
         this.body = body;
+    }
+
+    public void dispose(){
+        img.dispose();
     }
 }

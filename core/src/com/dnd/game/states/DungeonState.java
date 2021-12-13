@@ -16,6 +16,7 @@ import com.dnd.game.dungeon.Room;
 import com.dnd.game.entities.Enemy;
 import com.dnd.game.entities.Player;
 import com.dnd.game.utils.SceneBuilder;
+import com.dnd.game.weapons.Bullet;
 
 import static com.dnd.game.Globals.PPM;
 import static com.dnd.game.utils.MathUtils.randomChance;
@@ -29,7 +30,7 @@ public class DungeonState extends GameState {
 
     private Room[][] rooms;
     private Vector2 pos;
-    private int roomCount = 0;
+    private int roomCount = 18;
 
     private RayHandler rayHandler;
 
@@ -45,7 +46,7 @@ public class DungeonState extends GameState {
         player = new Player(world, camera,rayHandler);
         CreateRoom(0);
         player.setCurrentPlayersRoom(rooms[(int) pos.x][(int) pos.y]);
-       // rooms[(int) pos.x][(int) pos.y].spawnmEn();
+       rooms[(int) pos.x][(int) pos.y].spawnmEn();
        // rooms[(int) pos.x][(int) pos.y].spawnmEn();
        // rooms[(int) pos.x][(int) pos.y].spawnmEn();
 
@@ -234,7 +235,10 @@ public class DungeonState extends GameState {
             }
         }
 
-        if (player.getDead()){
+        if (player.getDead() ){
+            gsm.setState(GameStateManager.State.DUNGEON);
+        }
+        if (rooms[(int) pos.x][(int) pos.y].getEnemies().get(0).getType() == Enemy.EmapEnemyType.BOSS && rooms[(int) pos.x][(int) pos.y] .getEnemies().get(0).isDead()){
             gsm.setState(GameStateManager.State.DUNGEON);
         }
         rayHandler.update();
@@ -262,7 +266,7 @@ public class DungeonState extends GameState {
 
        if (!player.getCurrentPlayersRoom().getEnemies().isEmpty()){
            for (Enemy e: player.getCurrentPlayersRoom().getEnemies()) {
-               e.render(camera);
+               e.render(camera, batch);
            }
        }
 

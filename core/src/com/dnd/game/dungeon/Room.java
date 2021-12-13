@@ -7,7 +7,9 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.dnd.game.entities.Enemy;
 import com.dnd.game.entities.InteractableEntity;
 import com.dnd.game.entities.LootPile;
+import com.dnd.game.entities.Player;
 import com.dnd.game.utils.SceneBuilder;
+import jogamp.opengl.util.jpeg.JPEGDecoder;
 
 import java.util.ArrayList;
 
@@ -124,6 +126,11 @@ public class Room {
     public void dispose() {
         if (chest != null) {
             chest.dispose();
+        }
+        if (!enemies.isEmpty()){
+            for (Enemy e:enemies){
+                e.dispose();
+            }
         }
     }
 
