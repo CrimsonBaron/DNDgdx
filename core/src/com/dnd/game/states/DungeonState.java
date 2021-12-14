@@ -32,7 +32,7 @@ public class DungeonState extends GameState {
 
     private Room[][] rooms;
     private Vector2 pos;
-    private int roomCount = 18;
+    private int roomCount = 0;
     private int maxRooms = 20;
 
     private RayHandler rayHandler;

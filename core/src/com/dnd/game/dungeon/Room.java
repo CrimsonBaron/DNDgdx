@@ -9,7 +9,7 @@ import com.dnd.game.entities.InteractableEntity;
 import com.dnd.game.entities.LootPile;
 import com.dnd.game.entities.Player;
 import com.dnd.game.utils.SceneBuilder;
-import jogamp.opengl.util.jpeg.JPEGDecoder;
+
 
 import java.util.ArrayList;
 
